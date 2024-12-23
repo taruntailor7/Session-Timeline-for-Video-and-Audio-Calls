@@ -1,11 +1,11 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-interface IEvent {
+export interface IEvent {
   start: string;
   end: string;
 }
 
-interface IError {
+export interface IError {
   start: string;
   message: string;
 }
@@ -67,7 +67,7 @@ const SessionSchema: Schema = new Schema(
   {
     meetingId: { type: String, required: true, unique: true },
     start: { type: String, required: true },
-    end: { type: String, required: true },
+    end: { type: String },
     uniqueParticipantsCount: { type: Number, required: true },
     participantArray: [ParticipantSchema],
   },
