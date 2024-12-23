@@ -34,7 +34,7 @@ interface ISession extends Document {
 const EventSchema: Schema = new Schema(
   {
     start: { type: String, required: true },
-    end: { type: String, required: true },
+    end: { type: String, required: false },
   },
   { _id: false }
 );

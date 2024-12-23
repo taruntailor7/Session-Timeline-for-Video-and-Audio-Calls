@@ -6,7 +6,7 @@ enum EventType {
   WEBCAM = "webcam",
   SCREEN_SHARE = "screenShare",
   SCREEN_SHARE_AUDIO = "screenShareAudio",
-  ERROR = "errors",
+  ERROR = "error",
 }
 
 // Fetch all sessions with pagination
@@ -32,15 +32,29 @@ export const getSessions = async (req: Request, res: Response) => {
 };
 
 // Start a new session
-export const startSession = async (req: Request, res: Response) => {
+export const startSession = async (req: Request, res: any) => {
   const { meetingId } = req.body;
 
   try {
+    // Check if a session already exists for the given meetingId
+    const existingSession = await Session.findOne({ meetingId });
+
+    if (existingSession) {
+      if (!existingSession.end) {
+        // If the session exists and has not ended, return an error
+        return res.status(400).json({ message: "Session is already active" });
+      } else {
+        // If the session exists but has ended, return an error
+        return res.status(400).json({ message: "Session has already ended" });
+      }
+    }
+
+    // If no session exists, create a new session
     const newSession = new Session({
       meetingId,
       start: new Date().toISOString(),
       uniqueParticipantsCount: 0,
-      end: "", // To be updated when session ends
+      end: "", // Use "" to indicate the session is ongoing
       participantArray: [],
     });
     await newSession.save();
@@ -62,21 +76,25 @@ export const addParticipant = async (req: Request, res: any) => {
     }
 
     // Find the participant in the session
-    const existingParticipant = session.participantArray.find(
+    const existingParticipant = session.participantArray?.find(
       (participant) => participant.participantId === participantId
     );
-
+    console.log('existingParticipant', existingParticipant);
     const currentTimestamp = new Date().toISOString();
 
     if (existingParticipant) {
-      // Participant already exists, update their timelog
-      // Check if the participant has left, if they have, add a new entry in the timelog
-      if (existingParticipant.timelog.length === 0) {
-        // If no previous timelog or the last entry has an end time, add a new start
+      // Participant already exists, check their timelog
+      const lastTimelog = existingParticipant.timelog[existingParticipant.timelog.length - 1];
+
+      if (lastTimelog && lastTimelog.end) {
+        // If the last timelog has an `end` time, add a new entry for rejoining
         existingParticipant.timelog.push({
           start: currentTimestamp,
-          end: "",
+          end: "", // Use "" to indicate the session is ongoing
         });
+      } else if (!lastTimelog || lastTimelog.end === "") {
+        // If the last timelog has no `end` time, the user is already active
+        return res.status(200).json({ message: "Participant is already active in the session", session });
       }
 
       // Ensure the session count is updated for unique participants
@@ -117,6 +135,7 @@ export const addParticipant = async (req: Request, res: any) => {
   }
 };
 
+// Participant leave from a session
 export const leaveParticipant = async (req: Request, res: any) => {
   const { meetingId, participantId } = req.body;
 
@@ -159,45 +178,6 @@ export const leaveParticipant = async (req: Request, res: any) => {
 };
 
 // Log events for a participant
-// export const logEvent = async (req: Request, res: any) => {
-//   const { meetingId, participantId, eventType } = req.body;
-
-//   try {
-//     const session = await Session.findOne({ meetingId });
-
-//     if (!session) {
-//       return res.status(404).json({ message: "Session not found" });
-//     }
-
-//     const participant = session.participantArray.find(
-//       (p) => p.participantId === participantId
-//     );
-
-//     if (!participant) {
-//       return res.status(404).json({ message: "Participant not found" });
-//     }
-
-//     const event = { start, end };
-
-//     if (
-//       eventType === "mic" ||
-//       eventType === "webcam" ||
-//       eventType === "screenShare" ||
-//       eventType === "screenShareAudio"
-//     ) {
-//       participant.events[eventType].push(event);
-//     } else if (eventType === "errors") {
-//       const error = { start, message };
-//       participant.events.errors.push(error);
-//     }
-
-//     await session.save();
-//     res.status(200).json(session);
-//   } catch (error) {
-//     res.status(500).json({ message: "Error logging event", error });
-//   }
-// };
-
 export const logEvent = async (req: Request, res: any) => {
   const { meetingId, participantId, eventType, message } = req.body;
   const currentTimestamp = new Date().toISOString();
@@ -287,6 +267,12 @@ export const endSession = async (req: Request, res: any) => {
       return res.status(404).json({ message: "Session not found" });
     }
 
+    if (session.end) {
+      // If the session has already ended, return an error
+      return res.status(400).json({ message: "Session has already ended" });
+    }
+
+    // End the session
     session.end = new Date().toISOString();
     await session.save();
     res.status(200).json(session);
