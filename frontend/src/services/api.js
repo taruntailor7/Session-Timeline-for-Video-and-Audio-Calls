@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:5000/api/sessions"; // Update with your backend URL
+const API_BASE_URL = "https://session-timeline-for-video-and-audio.onrender.com/api/sessions"; // Update with your backend URL
 
 // Fetch all sessions
 export const fetchSessions = async (page, limit) => {
