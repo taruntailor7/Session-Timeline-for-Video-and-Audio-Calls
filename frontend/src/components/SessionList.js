@@ -34,18 +34,16 @@ const SessionList = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
+    <div className="p-6 bg-black min-h-screen">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 text-center">
-          Sessions
-        </h1>
+        <h1 className="text-3xl font-bold text-white text-center">Sessions</h1>
       </header>
 
       {loading ? (
         <p className="text-center text-gray-500">Loading sessions...</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="table-auto w-full bg-white rounded-lg shadow-md">
+          <table className="table-auto w-full bg-black rounded-lg shadow-md border border-gray-700">
             <thead className="bg-gray-800 text-white">
               <tr>
                 <th className="px-6 py-3 text-left">Session ID</th>
@@ -57,16 +55,20 @@ const SessionList = () => {
               {sessions.map((session) => (
                 <tr
                   key={session._id}
-                  className="hover:bg-gray-100 transition-all"
+                  className="hover:bg-gray-900 transition-all"
                 >
-                  <td className="px-6 py-4 text-gray-700">{session._id}</td>
-                  <td className="px-6 py-4 text-gray-700">
+                  <td className="px-6 py-4 text-gray-300">{session._id}</td>
+                  <td className="px-6 py-4 text-gray-300">
                     {session.meetingId}
                   </td>
                   <td className="px-6 py-4">
                     <Link
                       to={`/session/${session._id}`}
-                      className="text-blue-500 hover:text-blue-700 underline"
+                      style={{
+                        color: "#5568FE",
+                        textDecoration: "underline",
+                      }}
+                      className="hover:text-[#5568FE]"
                     >
                       View Details
                     </Link>
@@ -81,22 +83,22 @@ const SessionList = () => {
             <button
               className={`px-4 py-2 rounded-md ${
                 currentPage === 1
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
+                  ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                  : "bg-gray-900 text-white hover:bg-gray-700"
               }`}
               disabled={currentPage === 1}
               onClick={() => handlePageChange(currentPage - 1)}
             >
               Previous
             </button>
-            <span className="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700">
+            <span className="px-4 py-2 bg-black border border-gray-700 rounded-md text-gray-300">
               Page {currentPage} of {totalPages}
             </span>
             <button
               className={`px-4 py-2 rounded-md ${
                 currentPage === totalPages
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
+                  ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                  : "bg-gray-900 text-white hover:bg-gray-700"
               }`}
               disabled={currentPage === totalPages}
               onClick={() => handlePageChange(currentPage + 1)}
