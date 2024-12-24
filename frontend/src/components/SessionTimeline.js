@@ -5,29 +5,32 @@ import {
   MonitorUp, MonitorOff,
   Volume2, VolumeX,
   LogIn, LogOut,
-  AlertTriangle
+  AlertTriangle,
+  ChevronRight,
+  FileText
 } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { fetchSessionDetails } from '../services/api';
 
 const eventIcons = {
-  "mic-start": <Mic className="w-4 h-4 text-green-600" />,
-  "mic-end": <MicOff className="w-4 h-4 text-red-600" />,
-  "webcam-start": <Video className="w-4 h-4 text-green-600" />,
-  "webcam-end": <VideoOff className="w-4 h-4 text-red-600" />,
-  "join": <LogIn className="w-4 h-4 text-blue-600" />,
-  "leave": <LogOut className="w-4 h-4 text-gray-600" />,
-  "errors-start": <AlertTriangle className="w-4 h-4 text-yellow-600" />,
-  "screenShare-start": <MonitorUp className="w-4 h-4 text-green-600" />,
-  "screenShare-end": <MonitorOff className="w-4 h-4 text-red-600" />,
-  "screenShareAudio-start": <Volume2 className="w-4 h-4 text-green-600" />,
-  "screenShareAudio-end": <VolumeX className="w-4 h-4 text-red-600" />
+  "mic-start": <Mic className="w-4 h-4" />,
+  "mic-end": <MicOff className="w-4 h-4" />,
+  "webcam-start": <Video className="w-4 h-4" />,
+  "webcam-end": <VideoOff className="w-4 h-4" />,
+  "join": <LogIn className="w-4 h-4" />,
+  "leave": <LogOut className="w-4 h-4" />,
+  "errors-start": <AlertTriangle className="w-4 h-4" />,
+  "screenShare-start": <MonitorUp className="w-4 h-4" />,
+  "screenShare-end": <MonitorOff className="w-4 h-4" />,
+  "screenShareAudio-start": <Volume2 className="w-4 h-4" />,
+  "screenShareAudio-end": <VolumeX className="w-4 h-4" />
 };
 
 const SessionTimeline = () => {
   const { id } = useParams();
   const [sessionDetails, setSessionDetails] = useState(null);
   const [timeMarkers, setTimeMarkers] = useState([]);
+  const [showParticipantTimeline, setShowParticipantTimeline] = useState(true);
 
   useEffect(() => {
     const getSessionDetails = async () => {
@@ -35,7 +38,6 @@ const SessionTimeline = () => {
         const data = await fetchSessionDetails(id);
         setSessionDetails(data);
         
-        // Generate minute markers
         if (data.start && data.end) {
           const markers = [];
           const startTime = new Date(data.start);
@@ -67,14 +69,13 @@ const SessionTimeline = () => {
   };
 
   const renderTimeMarkers = () => (
-    <div className="relative h-8 mb-4 border-b border-gray-200">
+    <div className="relative h-8">
       {timeMarkers.map((time, index) => (
         <div
           key={index}
           className="absolute transform -translate-x-1/2"
           style={{ left: `${calculatePosition(time)}%` }}
         >
-          <div className="h-2 w-0.5 bg-gray-300 mb-1" />
           <span className="text-xs text-gray-500">
             {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
@@ -83,64 +84,96 @@ const SessionTimeline = () => {
     </div>
   );
 
+  const renderTimelineSegments = (timeline) => {
+    let segments = [];
+    let currentSegment = [];
+    
+    timeline.forEach((event, index) => {
+      if (event.type === 'join') {
+        currentSegment = [event];
+      } else if (event.type === 'leave' && currentSegment.length > 0) {
+        currentSegment.push(event);
+        segments.push(currentSegment);
+        currentSegment = [];
+      } else if (currentSegment.length > 0) {
+        currentSegment.push(event);
+      }
+    });
+
+    if (currentSegment.length > 0) {
+      segments.push(currentSegment);
+    }
+
+    return segments.map((segment, segmentIndex) => {
+      const startPos = calculatePosition(segment[0].start);
+      const endPos = calculatePosition(segment[segment.length - 1].start);
+      
+      return (
+        <React.Fragment key={segmentIndex}>
+          <div 
+            className="absolute h-0.5 bg-[#424FB0]"
+            style={{
+              left: `${startPos}%`,
+              width: `${endPos - startPos}%`,
+              top: '50%',
+              transform: 'translateY(-50%)'
+            }}
+          />
+          {segment.map((event, eventIndex) => renderTimelineEvent(event, `${segmentIndex}-${eventIndex}`))}
+        </React.Fragment>
+      );
+    });
+  };
+
   const renderTimelineEvent = (event, index) => {
     const position = calculatePosition(event.start);
   
     return (
       <div
         key={`${event.type}-${index}`}
-        className="absolute transform -translate-x-1/2 group"
-        style={{ left: `${position}%` }}
+        className="absolute transform -translate-x-1/2 group z-10"
+        style={{ left: `${position}%`, top: '50%', transform: 'translate(-50%, -50%)' }}
       >
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white border-2 border-gray-200 hover:border-blue-500 transition-colors duration-200">
+        <div className={`flex items-center justify-center w-6 h-6 rounded-full ${
+          event.type.includes('end') ? 'bg-gray-800' : 'bg-[#424FB0]'
+        } border-2 border-black hover:border-[#424FB0] transition-colors duration-200`}>
           {eventIcons[event.type]}
         </div>
-        {event.type === "errors-start" ? (
-          <div className="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap">
-            <p>Error: {event.message}</p>
-            <p className="text-gray-300">{new Date(event.start).toLocaleString()}</p>
-          </div>
-        ) : (
-          <div className="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap">
-            {new Date(event.start).toLocaleString()}
-          </div>
-        )}
+        <div className="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap">
+          {event.type === "errors-start" ? (
+            <>
+              <p>Error: {event.message}</p>
+              <p className="text-gray-400">{new Date(event.start).toLocaleString()}</p>
+            </>
+          ) : (
+            new Date(event.start).toLocaleString()
+          )}
+        </div>
       </div>
     );
   };
 
-  const renderParticipantTimeline = (participant) => {
+  const renderParticipantTimeline = (participant, index) => {
     const timeline = [];
 
-    // Process join and leave events
     participant.timelog.forEach(timelog => {
       if (timelog.start) timeline.push({ type: 'join', start: timelog.start });
       if (timelog.end) timeline.push({ type: 'leave', start: timelog.end });
     });
 
-    // Process other events
     Object.entries(participant.events).forEach(([eventType, events]) => {
       events.forEach(event => {
-        // Handle "errors" type differently
         if (eventType === "errors") {
           timeline.push({
             type: `${eventType}-start`,
             start: event.start,
-            message: event.message, // Include the message for errors
+            message: event.message,
           });
         } else {
-          // Handle other event types
-          timeline.push({
-            type: `${eventType}-start`,
-            start: event.start,
-          });
-        }
-
-        if (event.end && event.end !== "") {
-          timeline.push({
-            type: `${eventType}-end`,
-            start: event.end
-          });
+          timeline.push({ type: `${eventType}-start`, start: event.start });
+          if (event.end && event.end !== "") {
+            timeline.push({ type: `${eventType}-end`, start: event.end });
+          }
         }
       });
     });
@@ -148,44 +181,57 @@ const SessionTimeline = () => {
     timeline.sort((a, b) => new Date(a.start) - new Date(b.start));
 
     return (
-      <div className="mb-8" key={participant.participantId}>
-        <div className="flex items-center mb-2">
-          <h2 className="text-lg font-semibold">{participant.name}</h2>
-          <span className="ml-2 text-sm text-gray-500">({participant.participantId})</span>
+      <div key={participant.participantId} className={`relative ${index > 0 ? 'border-t border-gray-800 pt-8' : ''}`}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-white text-sm font-medium">{participant.name} ({participant.participantId})</h2>
+            <div className="text-xs text-gray-500 mt-1">
+              {new Date(participant.timelog[0]?.start).toLocaleDateString()} | Duration {participant.duration} Mins
+            </div>
+          </div>
+          <button className="flex items-center text-[#424FB0] text-sm hover:text-opacity-80">
+            View details <ChevronRight className="w-4 h-4 ml-1" />
+          </button>
         </div>
         
         <div className="relative h-16">
-          {/* Timeline base line */}
-          <div className="absolute w-full h-0.5 bg-gray-200 top-1/2 transform -translate-y-1/2" />
-          
-          {/* Timeline events */}
-          {timeline.map(renderTimelineEvent)}
+          {renderTimelineSegments(timeline)}
         </div>
       </div>
     );
   };
 
-  if (!sessionDetails) {
-    return <div className="p-4">Loading...</div>;
-  }
+  if (!sessionDetails) return <div className="p-4 text-white">Loading...</div>;
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-4">Session Timeline</h1>
-        {renderTimeMarkers()}
+    <div className="p-6 bg-black min-h-screen">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center text-white">
+          <FileText className="w-5 h-5 mr-2" />
+          <h1 className="text-lg font-medium">Participants wise Session Timeline</h1>
+        </div>
+        <div className="flex items-center">
+          <span className="text-sm text-gray-400 mr-2">Show participant timeline</span>
+          <button 
+            className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 ${
+              showParticipantTimeline ? 'bg-[#424FB0]' : 'bg-gray-800'
+            }`}
+            onClick={() => setShowParticipantTimeline(!showParticipantTimeline)}
+          >
+            <div className={`w-4 h-4 rounded-full bg-white transform transition-transform duration-200 ${
+              showParticipantTimeline ? 'translate-x-6' : 'translate-x-0'
+            }`} />
+          </button>
+        </div>
       </div>
 
-      <div className="space-y-6">
+      {renderTimeMarkers()}
+
+      <div className="mt-8 space-y-8">
         {sessionDetails.participantArray?.length > 0 ? (
           sessionDetails.participantArray.map(renderParticipantTimeline)
         ) : (
-          <div className="text-gray-500">
-            <p>No participants joined this session.</p>
-            <p className="mt-2">Meeting ID: <strong>{sessionDetails.meetingId}</strong></p>
-            <p>Start: <strong>{new Date(sessionDetails.start).toLocaleString()}</strong></p>
-            <p>End: <strong>{new Date(sessionDetails.end).toLocaleString()}</strong></p>
-          </div>
+          <div className="text-gray-500">No participants joined this session.</div>
         )}
       </div>
     </div>
