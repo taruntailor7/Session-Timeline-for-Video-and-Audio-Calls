@@ -11,7 +11,6 @@ enum EventType {
 
 // Fetch all sessions with pagination
 export const getSessions = async (req: Request, res: Response) => {
-  console.log("coming  here");
   const { page = 1, limit = 10 } = req.query;
 
   try {
@@ -28,6 +27,23 @@ export const getSessions = async (req: Request, res: Response) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Error fetching sessions", error });
+  }
+};
+
+// Fetch details of a specific session
+export const getSession = async (req: Request, res: any) => {
+  const { id } = req.params;
+
+  try {
+    const session = await Session.findById(id);
+
+    if (!session) {
+      return res.status(404).json({ message: "Session not found" });
+    }
+
+    res.status(200).json(session);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching the session", error });
   }
 };
 
@@ -79,7 +95,6 @@ export const addParticipant = async (req: Request, res: any) => {
     const existingParticipant = session.participantArray?.find(
       (participant) => participant.participantId === participantId
     );
-    console.log('existingParticipant', existingParticipant);
     const currentTimestamp = new Date().toISOString();
 
     if (existingParticipant) {

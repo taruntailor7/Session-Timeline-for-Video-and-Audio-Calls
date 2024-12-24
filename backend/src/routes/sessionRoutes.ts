@@ -6,11 +6,13 @@ import {
   logEvent,
   endSession,
   getSessions,
+  getSession,
 } from "../controllers/sessionController";
 
 const router = Router();
 
 router.get("/sessions", getSessions);
+router.get("/sessions/:id", getSession);
 router.post("/sessions/start", startSession);
 router.post("/sessions/:meetingId/participant", addParticipant);
 router.post("/sessions/:meetingId/leave-participant", leaveParticipant);
