@@ -14,17 +14,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { fetchSessionDetails } from '../services/api';
 
 const eventIcons = {
-  "mic-start": <Mic className="w-4 h-4" />,
-  "mic-end": <MicOff className="w-4 h-4" />,
-  "webcam-start": <Video className="w-4 h-4" />,
-  "webcam-end": <VideoOff className="w-4 h-4" />,
-  "join": <LogIn className="w-4 h-4" />,
-  "leave": <LogOut className="w-4 h-4" />,
-  "errors-start": <AlertTriangle className="w-4 h-4" />,
-  "screenShare-start": <MonitorUp className="w-4 h-4" />,
-  "screenShare-end": <MonitorOff className="w-4 h-4" />,
-  "screenShareAudio-start": <Volume2 className="w-4 h-4" />,
-  "screenShareAudio-end": <VolumeX className="w-4 h-4" />
+  "mic-start": <Mic className="w-4 h-4 text-white" />,
+  "mic-end": <MicOff className="w-4 h-4 text-white" />,
+  "webcam-start": <Video className="w-4 h-4 text-white" />,
+  "webcam-end": <VideoOff className="w-4 h-4 text-white" />,
+  "join": <LogIn className="w-4 h-4 text-white" />,
+  "leave": <LogOut className="w-4 h-4 text-white" />,
+  "errors-start": <AlertTriangle className="w-4 h-4 text-white" />,
+  "screenShare-start": <MonitorUp className="w-4 h-4 text-white" />,
+  "screenShare-end": <MonitorOff className="w-4 h-4 text-white" />,
+  "screenShareAudio-start": <Volume2 className="w-4 h-4 text-white" />,
+  "screenShareAudio-end": <VolumeX className="w-4 h-4 text-white" />
 };
 
 const SessionTimeline = () => {
@@ -113,7 +113,7 @@ const SessionTimeline = () => {
       return (
         <React.Fragment key={segmentIndex}>
           <div 
-            className="absolute h-0.5 bg-[#424FB0]"
+            className="absolute h-0.5 bg-[#5568FE]"
             style={{
               left: `${startPos}%`,
               width: `${endPos - startPos}%`,
@@ -136,9 +136,9 @@ const SessionTimeline = () => {
         className="absolute transform -translate-x-1/2 group z-10"
         style={{ left: `${position}%`, top: '50%', transform: 'translate(-50%, -50%)' }}
       >
-        <div className={`flex items-center justify-center w-6 h-6 rounded-full ${
-          event.type.includes('end') ? 'bg-gray-800' : 'bg-[#424FB0]'
-        } border-2 border-black hover:border-[#424FB0] transition-colors duration-200`}>
+        <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${
+          event.type.includes('end') ? 'bg-gray-800' : 'bg-[#5568FE]'
+        } border-2 border-black hover:border-[#5568FE] transition-colors duration-200`}>
           {eventIcons[event.type]}
         </div>
         <div className="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap">
@@ -191,7 +191,7 @@ const SessionTimeline = () => {
               {new Date(participant.timelog[0]?.start).toLocaleDateString()} | Duration {20} Mins
             </div>
           </div>
-          <button className="flex items-center text-[#424FB0] text-sm hover:text-opacity-80">
+          <button className="flex items-center text-[#5568FE] text-sm hover:text-opacity-80">
             View details <ChevronRight className="w-4 h-4 ml-1" />
           </button>
         </div>
@@ -208,7 +208,7 @@ const SessionTimeline = () => {
   return (
     <div className="p-6 bg-black min-h-screen">
       <button
-        className="flex items-center text-[#424FB0] text-sm mb-6 hover:text-opacity-80"
+        className="flex items-center text-[#5568FE] text-sm mb-6 hover:text-opacity-80"
         onClick={() => navigate('/')}
       >
         <ArrowLeft className="w-5 h-5 mr-2" />
@@ -224,7 +224,7 @@ const SessionTimeline = () => {
           <span className="text-sm text-gray-400 mr-2">Show participant timeline</span>
           <button 
             className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 ${
-              showParticipantTimeline ? 'bg-[#424FB0]' : 'bg-gray-800'
+              showParticipantTimeline ? 'bg-[#5568FE]' : 'bg-gray-800'
             }`}
             onClick={() => setShowParticipantTimeline(!showParticipantTimeline)}
           >
