@@ -7,9 +7,10 @@ import {
   LogIn, LogOut,
   AlertTriangle,
   ChevronRight,
-  FileText
+  FileText,
+  ArrowLeft
 } from 'lucide-react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { fetchSessionDetails } from '../services/api';
 
 const eventIcons = {
@@ -28,6 +29,7 @@ const eventIcons = {
 
 const SessionTimeline = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [sessionDetails, setSessionDetails] = useState(null);
   const [timeMarkers, setTimeMarkers] = useState([]);
   const [showParticipantTimeline, setShowParticipantTimeline] = useState(true);
@@ -69,7 +71,7 @@ const SessionTimeline = () => {
   };
 
   const renderTimeMarkers = () => (
-    <div className="relative h-8">
+    <div className="relative h-8 border-b border-gray-700">
       {timeMarkers.map((time, index) => (
         <div
           key={index}
@@ -186,7 +188,7 @@ const SessionTimeline = () => {
           <div>
             <h2 className="text-white text-sm font-medium">{participant.name} ({participant.participantId})</h2>
             <div className="text-xs text-gray-500 mt-1">
-              {new Date(participant.timelog[0]?.start).toLocaleDateString()} | Duration {participant.duration} Mins
+              {new Date(participant.timelog[0]?.start).toLocaleDateString()} | Duration {20} Mins
             </div>
           </div>
           <button className="flex items-center text-[#424FB0] text-sm hover:text-opacity-80">
@@ -205,7 +207,15 @@ const SessionTimeline = () => {
 
   return (
     <div className="p-6 bg-black min-h-screen">
-      <div className="flex justify-between items-center mb-6">
+      <button
+        className="flex items-center text-[#424FB0] text-sm mb-6 hover:text-opacity-80"
+        onClick={() => navigate('/')}
+      >
+        <ArrowLeft className="w-5 h-5 mr-2" />
+        Back to Sessions
+      </button>
+      
+      <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
         <div className="flex items-center text-white">
           <FileText className="w-5 h-5 mr-2" />
           <h1 className="text-lg font-medium">Participants wise Session Timeline</h1>
