@@ -143,3 +143,9 @@ Since the application is deployed, no setup is required for testing.
 ## Conclusion
 This documentation provides an overview of the application structure, setup instructions, API details, and deployed links. The project is designed to be scalable and user-friendly, making it easy to manage session timelines effectively. For any queries, feel free to reach out!
 
+
+Session
+![alt text](image.png)
+
+Participants wise session timeline
+![alt text](image-1.png)
